@@ -4,6 +4,15 @@ from pydub import AudioSegment
 import io
 import tempfile
 
+import subprocess
+import streamlit as st
+
+try:
+    result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True)
+    st.text(result.stdout)
+except FileNotFoundError:
+    st.error("ffmpeg not found.")
+
 # Function to handle audio processing and transcription in-memory
 def transcribe_audio(audio_file):
     model = whisper.load_model("base")
