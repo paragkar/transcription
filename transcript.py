@@ -1,39 +1,44 @@
 import streamlit as st
-import subprocess
-import tempfile
 import whisper
+from pydub import AudioSegment
+import io
+import tempfile
 
-# Function to convert MP4 to WAV using ffmpeg, directly from bytes to bytes
-def convert_mp4_to_wav_ffmpeg_bytes2bytes(input_data: bytes) -> bytes:
-    with tempfile.NamedTemporaryFile(suffix=".mp4") as input_temp, \
-         tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as output_temp:
-        input_temp.write(input_data)
-        input_temp.flush()  # Make sure data is written to disk
-        subprocess.run(['ffmpeg', '-i', input_temp.name, '-acodec', 'pcm_s16le', '-ar', '16000', output_temp.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output_temp.flush()  # Make sure data is written to disk
-        output_temp.seek(0)
-        return output_temp.read()
-
-# Function to transcribe audio
-def transcribe_audio(audio_bytes):
+# Function to handle audio processing and transcription in-memory
+def transcribe_audio(audio_file):
     model = whisper.load_model("base")
-    result = model.transcribe(audio_bytes)
-    return result["text"]
 
-# Streamlit app
+    # Load the audio file using pydub
+    audio = AudioSegment.from_file_using_temporary_files(io.BytesIO(audio_file.read()))
+
+    # Define the length of each segment in milliseconds (e.g., 30000 for 30 seconds)
+    segment_length = 30000
+
+    # Split the audio into segments and process each segment
+    transcript = ""
+    for i in range(0, len(audio), segment_length):
+        segment = audio[i:i + segment_length]
+
+        # Use a temporary file for the segment
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as segment_file:
+            segment.export(segment_file.name, format="wav")
+
+            # Transcribe the segment
+            result = model.transcribe(segment_file.name)
+            transcript += result["text"] + " "
+
+    return transcript
+
+# Streamlit app interface
 def main():
     st.title("Audio Transcription with Whisper")
-    video_file = st.file_uploader("Upload your MP4 file", type=["mp4"])
-    
-    if video_file is not None:
-        with st.spinner("Converting MP4 to WAV..."):
-            audio_bytes = convert_mp4_to_wav_ffmpeg_bytes2bytes(video_file.getvalue())
-        
-        with st.spinner("Transcribing audio..."):
-            transcript = transcribe_audio(audio_bytes)
-        
+    audio_file = st.file_uploader("Upload an audio file", type=["wav", "mp3", "mp4"])
+
+    if audio_file is not None:
+        transcript = transcribe_audio(audio_file)
+
         st.text_area("Transcript", transcript, height=300)
-        
+
         # Download button for the transcript
         btn = st.download_button(label="Download Transcript",
                                  data=transcript.encode(),
