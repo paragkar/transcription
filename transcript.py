@@ -37,7 +37,7 @@ def process_audio(audio_path, model):
 # Streamlit app
 def main():
     st.title("Audio Transcription with Whisper")
-    video_file = st.file_uploader("Upload your Wav file", type=["wav"])
+    video_file = st.file_uploader("Upload your MP4 file", type=["MP4"])
     if video_file is not None:
         with st.spinner("Extracting audio..."):
             audio_file = video_to_audio(video_file)
