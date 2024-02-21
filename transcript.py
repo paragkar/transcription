@@ -7,11 +7,17 @@ from io import BytesIO
 
 # Function to extract audio from video
 def video_to_audio(video_file):
-    video = mp.VideoFileClip(video_file.name)
-    audio = video.audio
-    audio_file = f"{video_file.name}.wav"
-    audio.write_audiofile(audio_file)
-    return audio_file
+    # Save the uploaded video file to disk
+    video_path = video_file.name
+    with open(video_path, "wb") as f:
+        f.write(video_file.getbuffer())
+    
+    # Proceed with conversion
+    video = mp.VideoFileClip(video_path)
+    audio_path = f"{video_file.name}.wav"
+    video.audio.write_audiofile(audio_path)
+    
+    return audio_path
 
 # Function to process audio and return transcript
 def process_audio(audio_path, model):
