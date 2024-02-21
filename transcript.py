@@ -33,7 +33,7 @@ def main():
     st.title("YouTube Video & Audio Transcription with Timestamps")
     
     uploaded_file = st.file_uploader("Upload an audio or video file", type=["mp3", "mp4", "wav"])
-    model_choice = st.selectbox("Select Whisper model size", ["tiny", "base", "small", "medium", "large"], index=1)
+    model_choice = st.selectbox("Select Whisper model size", ["tiny", "base", "small"], index=1)
     model = whisper.load_model(model_choice)
 
     if uploaded_file is not None:
