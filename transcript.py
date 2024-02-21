@@ -4,7 +4,7 @@ import moviepy.editor as mp
 from pydub import AudioSegment
 import os
 from io import BytesIO
-import imageio_ffmpeg as mp_ffmpeg
+import ffmpeg
 
 import subprocess
 
