@@ -4,6 +4,7 @@ import tempfile
 from pytube import YouTube
 from moviepy.editor import VideoFileClip
 import os
+from pydub import AudioSegment
 
 # Adjusted function definitions
 def transcribe_audio_in_blocks(audio_path):
