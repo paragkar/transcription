@@ -52,8 +52,10 @@ def main():
 
         with st.spinner("Processing and transcribing audio..."):
             for timestamp, transcript in process_and_transcribe_audio(audio_path, model):
-                st.write(f"Timestamp {timestamp}:")
-                st.text(transcript)
+                # Use st.container or st.expander to display transcript in a distinct box
+                with st.container():
+                    st.write(f"Timestamp {timestamp}:")
+                    st.text_area(label=f"", value=transcript, height=100, key=f"segment_{timestamp}")
                 aggregated_transcript += f"Timestamp {timestamp}:\n{transcript}\n\n"  # Append each segment's transcript
 
         # Provide a download button for the aggregated transcript
