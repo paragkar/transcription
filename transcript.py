@@ -5,6 +5,12 @@ from pydub import AudioSegment
 import os
 from io import BytesIO
 
+import subprocess
+
+# Display Whisper version (or any other package)
+result = subprocess.run(["pip", "show", "whisper"], capture_output=True, text=True)
+st.text(result.stdout)
+
 # Function to extract audio from video
 def video_to_audio(video_file):
     # Save the uploaded video file to disk
