@@ -4,6 +4,17 @@ import tempfile
 from moviepy.editor import VideoFileClip
 from pydub import AudioSegment
 import os
+from pytube import YouTube
+
+def download_youtube_video(url):
+    with tempfile.TemporaryDirectory() as tempdir:
+        yt = YouTube(url)
+        stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
+        file_path = stream.download(output_path=tempdir)
+        video = VideoFileClip(file_path)
+        audio_path = os.path.join(tempdir, "extracted_audio.wav")
+        video.audio.write_audiofile(audio_path)
+        return audio_path
 
 def transcribe_segment_with_timestamp(model, segment_path, start_time):
     result = model.transcribe(segment_path)
@@ -30,17 +41,37 @@ def process_and_transcribe_audio(audio_path, model):
 def main():
     st.title("YouTube Video & Audio Transcription with Timestamps")
     
+    # YouTube URL input
+    youtube_url = st.text_input("Enter a YouTube video URL", key='youtube_url')
+    
+    # File uploader
+    uploaded_file = st.file_uploader("Or upload an audio or video file", type=["mp3", "mp4", "wav"], key='uploaded_file')
+    
+    model_choice = st.selectbox("Select Whisper model size", ["tiny", "base", "small"], index=1)
+    model = whisper.load_model(model_choice)
+
     # Reset button
     if st.button('Reset'):
         if 'uploaded_file' in st.session_state:
             del st.session_state['uploaded_file']
+        if 'youtube_url' in st.session_state:
+            del st.session_state['youtube_url']
         st.experimental_rerun()
 
-    uploaded_file = st.file_uploader("Upload an audio or video file", type=["mp3", "mp4", "wav"], key='uploaded_file')
-    model_choice = st.selectbox("Select Whisper model size", ["tiny", "base", "small"], index=1)  # Limit model choices
-    model = whisper.load_model(model_choice)
+    if youtube_url:
+        with st.spinner("Downloading and processing YouTube video..."):
+            audio_path = download_youtube_video(youtube_url)
+            aggregated_transcript = ""
+            for timestamp, transcript in process_and_transcribe_audio(audio_path, model):
+                st.text(f"Timestamp {timestamp}: {transcript}")
+                aggregated_transcript += f"Timestamp {timestamp}:\n{transcript}\n\n"
 
-    if uploaded_file is not None:
+            # Download button for the aggregated transcript
+            st.download_button(label="Download Complete Transcript",
+                               data=aggregated_transcript.encode(),
+                               file_name="complete_transcript.txt",
+                               mime="text/plain")
+    elif uploaded_file is not None:
         with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.type.split('/')[1]}") as tmp:
             tmp.write(uploaded_file.getvalue())
             tmp_filename = tmp.name
