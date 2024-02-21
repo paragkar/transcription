@@ -4,6 +4,8 @@ from pydub import AudioSegment
 import io
 import tempfile
 
+import ffmmeg
+
 import subprocess
 import streamlit as st
 
