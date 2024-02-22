@@ -41,8 +41,8 @@ def main():
 
     if uploaded_file is not None:
         file_size = uploaded_file.size / (1024 * 1024)  # Convert bytes to MB
-        if file_size > 200:  # Adjusted to reflect the initial file size check
-            st.error("File size exceeds 200 MB. Please upload a smaller file.")
+        if file_size > 100:  # Adjusted to reflect the initial file size check
+            st.error("File size exceeds 100 MB. Please upload a smaller file.")
             return
         
         with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.type.split('/')[1]}") as tmp:
