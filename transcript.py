@@ -41,6 +41,11 @@ def main():
     model = whisper.load_model(model_choice)
 
     if uploaded_file is not None:
+        file_size = uploaded_file.size / (1024 * 1024)  # Convert bytes to MB
+        if file_size > 200:
+            st.error("File size exceeds 200 MB. Please upload a smaller file.")
+            return
+        
         with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.type.split('/')[1]}") as tmp:
             tmp.write(uploaded_file.getvalue())
             tmp_filename = tmp.name
