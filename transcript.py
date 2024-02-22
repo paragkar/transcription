@@ -37,7 +37,7 @@ def main():
         st.experimental_rerun()
 
     uploaded_file = st.file_uploader("Upload an audio or video file", type=["mp3", "mp4", "wav"], key='uploaded_file')
-    model_choice = st.selectbox("Select Whisper model size", ["tiny", "base", "small"], index=1)  # Limit model choices
+    model_choice = st.selectbox("Select Whisper model size", ["tiny", "base"], index=1)  # Limit model choices
     model = whisper.load_model(model_choice)
 
     if uploaded_file is not None:
